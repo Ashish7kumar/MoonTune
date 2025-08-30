@@ -1,4 +1,5 @@
 import modal
+import os
 app = modal.App("moon-tune")
 image = (
     modal.Image.debian_slim()
@@ -8,3 +9,14 @@ image = (
     .env({"HF_HOME": "/.cache/huggingface"})
     .add_local_python_source("prompts")
 )
+music_gen_secrets = modal.Secret.from_name("music-gen-secret")
+
+@app.function(image=image,secrets=[modal.Secret.from_name("music-gen-secret")])
+def function_test():
+    print("hello")
+    print(os.environ["test"])
+
+
+@app.local_entrypoint()
+def main():
+    function_test.remote()
