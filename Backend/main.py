@@ -264,13 +264,10 @@ def main():
         described_lyrics="lyrics about indian summer",
         guidance_scale=15
     )
-    headers={
-        "Modal-Key": "wk-D75PNySRjZpbOG8szikmHX",
-"Modal-Secret":"ws-6Jt2L7Sh0CZhf9ZXlFe6NH"
-    }
+   
     payload = request_data.model_dump()
 
-    response = requests.post(endpoint_url, json=payload,headers=headers)
+    response = requests.post(endpoint_url, json=payload)
     response.raise_for_status()
     result = GenerateMusicResponseS3(**response.json())
 
