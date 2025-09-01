@@ -75,7 +75,7 @@ class MusicGenServer:
         from diffusers import AutoPipelineForText2Image
         import torch
 
-        # Music Generation Model
+       
         self.music_model = ACEStepPipeline(
             checkpoint_dir="/models",
             dtype="bfloat16",
@@ -84,7 +84,7 @@ class MusicGenServer:
             overlapped_decode=False
         )
 
-        # Large Language Model
+        
         model_id = "Qwen/Qwen2-7B-Instruct"
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -95,7 +95,7 @@ class MusicGenServer:
             cache_dir="/.cache/huggingface"
         )
 
-        # Stable Diffusion Model (thumbnails)
+    
         self.image_pipe = AutoPipelineForText2Image.from_pretrained(
             "stabilityai/sdxl-turbo", torch_dtype=torch.float16, variant="fp16", cache_dir="/.cache/huggingface")
         self.image_pipe.to("cuda")
@@ -129,14 +129,13 @@ class MusicGenServer:
         # Insert description into template
         full_prompt = PROMPT_GENERATOR_PROMPT.format(user_prompt=description)
 
-        # Run LLM inference and return that
         return self.prompt_qwen(full_prompt)
 
     def generate_lyrics(self, description: str):
-        # Insert description into template
+        
         full_prompt = LYRICS_GENERATOR_PROMPT.format(description=description)
 
-        # Run LLM inference and return that
+        
         return self.prompt_qwen(full_prompt)
 
     def generate_categories(self, description: str) -> List[str]:
@@ -183,7 +182,7 @@ class MusicGenServer:
         s3_client.upload_file(output_path, bucket_name, audio_s3_key)
         os.remove(output_path)
 
-        # Thumbnail generation
+       
         thumbnail_prompt = f"{prompt}, album cover art"
         image = self.image_pipe(
             prompt=thumbnail_prompt, num_inference_steps=2, guidance_scale=0.0).images[0]
@@ -195,7 +194,7 @@ class MusicGenServer:
         s3_client.upload_file(image_output_path, bucket_name, image_s3_key)
         os.remove(image_output_path)
 
-        # Category generation: "hip-hop", "rock"
+       
         categories = self.generate_categories(description_for_categorization)
 
         return GenerateMusicResponseS3(
@@ -211,7 +210,7 @@ class MusicGenServer:
         output_path = os.path.join(output_dir, f"{uuid.uuid4()}.wav")
 
         self.music_model(
-            prompt="electronic rap",
+            prompt="country slow song",
             lyrics="[verse]\nWaves on the bass, pulsing in the speakers,\nTurn the dial up, we chasing six-figure features,\nGrinding on the beats, codes in the creases,\nDigital hustler, midnight in sneakers.\n\n[chorus]\nElectro vibes, hearts beat with the hum,\nUrban legends ride, we ain't ever numb,\nCircuits sparking live, tapping on the drum,\nLiving on the edge, never succumb.\n\n[verse]\nSynthesizers blaze, city lights a glow,\nRhythm in the haze, moving with the flow,\nSwagger on stage, energy to blow,\nFrom the blocks to the booth, you already know.\n\n[bridge]\nNight's electric, streets full of dreams,\nBass hits collective, bursting at seams,\nHustle perspective, all in the schemes,\nRise and reflective, ain't no in-betweens.\n\n[verse]\nVibin' with the crew, sync in the wire,\nGot the dance moves, fire in the attire,\nRhythm and blues, soul's our supplier,\nRun the digital zoo, higher and higher.\n\n[chorus]\nElectro vibes, hearts beat with the hum,\nUrban legends ride, we ain't ever numb,\nCircuits sparking live, tapping on the drum,\nLiving on the edge, never succumb.",
             audio_duration=180,
             infer_step=60,
@@ -230,10 +229,10 @@ class MusicGenServer:
 
     @modal.fastapi_endpoint(method="POST", requires_proxy_auth=True)
     def generate_from_description(self, request: GenerateFromDescriptionRequest) -> GenerateMusicResponseS3:
-        # Generating a prompt
+       
         prompt = self.generate_prompt(request.full_described_song)
 
-        # Generating lyrics
+        
         lyrics = ""
         if not request.instrumental:
             lyrics = self.generate_lyrics(request.full_described_song)
@@ -261,8 +260,8 @@ def main():
     endpoint_url = server.generate_with_described_lyrics.get_web_url()
 
     request_data = GenerateWithDescribedLyricsRequest(
-        prompt="rave, funk, 140BPM, disco",
-        described_lyrics="lyrics about water bottles",
+        prompt="country, slow, 90BPM",
+        described_lyrics="lyrics about indian summer",
         guidance_scale=15
     )
     headers={
@@ -278,7 +277,3 @@ def main():
     print(
         f"Success: {result.s3_key} {result.cover_image_s3_key} {result.categories}")
 
-    # audio_bytes = base64.b64decode(result.audio_data)
-    # output_filename = "generated.wav"
-    # with open(output_filename, "wb") as f:
-    #     f.write(audio_bytes)
