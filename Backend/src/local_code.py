@@ -1,7 +1,8 @@
-import modal
 import requests
-from serverless_code import MusicGenServer,app
-from schemas import GenerateFromDescriptionRequest,GenerateWithCustomLyricsRequest,GenerateWithDescribedLyricsRequest,GenerateMusicResponseS3,GenerateMusicResponse
+from Backend.src.serverless_code import MusicGenServer
+from Backend.src.schemas import GenerateWithDescribedLyricsRequest,GenerateMusicResponseS3
+from Backend.src import app
+
 @app.local_entrypoint()
 def main():
     server = MusicGenServer()
@@ -15,7 +16,7 @@ def main():
    
     payload = request_data.model_dump()
 
-    response = requests.post(endpoint_url, json=payload)
+    response = requests.post(endpoint_url, json=payload)#type:ignore
     response.raise_for_status()
     result = GenerateMusicResponseS3(**response.json())
 

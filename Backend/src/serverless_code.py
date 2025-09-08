@@ -4,16 +4,17 @@ import boto3
 import base64
 import uuid
 from typing import List
-from prompts import LYRICS_GENERATOR_PROMPT, PROMPT_GENERATOR_PROMPT
-from schemas import GenerateFromDescriptionRequest,GenerateWithCustomLyricsRequest,GenerateWithDescribedLyricsRequest,GenerateMusicResponseS3,GenerateMusicResponse
-app = modal.App("moon-tune")
+from Backend.src.prompts import LYRICS_GENERATOR_PROMPT, PROMPT_GENERATOR_PROMPT
+from Backend.src import app
+from Backend.src.schemas import GenerateFromDescriptionRequest,GenerateWithCustomLyricsRequest,GenerateWithDescribedLyricsRequest,GenerateMusicResponseS3,GenerateMusicResponse
+
 image = (
     modal.Image.debian_slim()
     .apt_install("git")
-    . pip_install_from_requirements("requirements.txt")
+    .pip_install_from_requirements("Backend/src/requirements.txt")
     .run_commands(["git clone https://github.com/ace-step/ACE-Step.git /tmp/ACE-Step", "cd /tmp/ACE-Step && pip install ."])
     .env({"HF_HOME": "/.cache/huggingface"})
-    .add_local_python_source("prompts")
+    .add_local_python_source("Backend")
 )
 
 model_volume = modal.Volume.from_name(
@@ -34,10 +35,10 @@ music_gen_secrets = modal.Secret.from_name("music-gen-secret")
 class MusicGenServer:
     @modal.enter()
     def load_model(self):
-        from acestep.pipeline_ace_step import ACEStepPipeline
-        from transformers import AutoModelForCausalLM, AutoTokenizer
-        from diffusers import AutoPipelineForText2Image
-        import torch
+        from acestep.pipeline_ace_step import ACEStepPipeline #type:ignore
+        from transformers import AutoModelForCausalLM, AutoTokenizer #type:ignore
+        from diffusers import AutoPipelineForText2Image #type:ignore
+        import torch #type:ignore
 
        
         self.music_model = ACEStepPipeline(
