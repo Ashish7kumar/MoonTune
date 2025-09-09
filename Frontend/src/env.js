@@ -12,7 +12,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    // INNGEST_EVENT_KEY: z.string(),
+    INNGEST_EVENT_KEY: z.string().min(5), 
     MODAL_KEY: z.string(),
     MODAL_SECRET: z.string(),
     AWS_ACCESS_KEY_ID: z.string(),
@@ -42,7 +42,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    // INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
+    INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     MODAL_KEY: process.env.MODAL_KEY,
     MODAL_SECRET: process.env.MODAL_SECRET,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
